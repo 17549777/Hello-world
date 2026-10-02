@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="description" content="思い出や好きなものを5つの謎にして、URLで贈れる無料β版の謎解きメーカー「謎レター」。">
+<meta name="referrer" content="no-referrer">
+<title>謎レター β｜誰かのための謎解きをつくる</title>
+<style>
+:root{
+  --page:#f7f5f2; --surface:#ffffff; --surface2:#fbfaf8; --ink:#272321; --muted:#766e68;
+  --line:#e8e1db; --brand:#d96f76; --brand2:#f0b17f; --soft:#fff0ef;
+  --ok:#4c8665; --warn:#9a6b2e; --bad:#b65750; --shadow:0 16px 48px rgba(69,51,41,.08);
+  --radius:24px;
+}
+*{box-sizing:border-box}
+html{color-scheme:light}
+body{
+  margin:0;background:var(--page);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI","Noto Sans JP",sans-serif;
+}
+button,input,textarea,select{
+  font:inherit;color:var(--ink)!important;-webkit-text-fill-color:var(--ink)!important;
+  -webkit-appearance:none;appearance:none;
+}
+button{cursor:pointer}
+input,textarea,select{
+  width:100%;background:#fff!important;border:1px solid var(--line);border-radius:14px;
+  padding:12px 13px;outline:none;caret-color:var(--ink)
+}
+input::placeholder,textarea::placeholder{color:#9c948e!important;-webkit-text-fill-color:#9c948e!important;opacity:1}
+input:focus,textarea:focus,select:focus{border-color:#e4aaa9;box-shadow:0 0 0 3px rgba(217,111,118,.12)}
+textarea{min-height:98px;resize:vertical}
+.hidden{display:none!important}
+
+.app{max-width:1120px;margin:auto;padding:20px 16px 68px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:950;color:var(--brand);letter-spacing:.02em}
+.brand-mark{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:flex;align-items:center;justify-content:center;color:#fff}
+.top-meta{font-size:12px;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.hero{padding:28px}
+.section{padding:22px;margin-top:14px}
+h1{font-size:32px;line-height:1.3;margin:9px 0}
+h2{font-size:21px;margin:5px 0 8px}
+h3{font-size:17px;margin:4px 0}
+p{line-height:1.72;margin:7px 0}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border-radius:999px;background:var(--soft);color:var(--brand);font-size:12px;font-weight:900}
+.sep{height:1px;background:var(--line);margin:18px 0}
+.row{display:flex;gap:9px;flex-wrap:wrap}
+.row>*{flex:1}
+.btn{border:0;border-radius:14px;padding:12px 14px;font-weight:900;background:#fff;transition:.16s}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--brand)!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.btn.soft{background:var(--soft)!important;color:var(--brand)!important;-webkit-text-fill-color:var(--brand)!important}
+.btn.ghost{background:#fff!important;border:1px solid var(--line)!important}
+.btn.dark{background:#2f2b29!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.notice{padding:11px 13px;border-radius:13px;margin-top:10px;line-height:1.58;font-size:14px}
+.notice.info{background:#f4f1ed;color:#6c645f}
+.notice.ok{background:#edf7f0;color:var(--ok)}
+.notice.warn{background:#fff7e8;color:#846238}
+.notice.bad{background:#fff0ed;color:var(--bad)}
+label{display:block;font-size:12px;color:var(--muted);font-weight:900;margin:12px 0 6px}
+.req:after{content:" *";color:var(--brand)}
+.help{font-size:11px;color:var(--muted);margin-top:5px}
+
+/* stepper */
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:18px}
+.step{padding:10px 9px;border:1px solid var(--line);border-radius:14px;background:#fff;text-align:center;font-size:12px;font-weight:900;color:var(--muted)}
+.step.ok{background:#edf7f0;color:var(--ok);border-color:#cfe4d6}
+.step.now{background:var(--soft);color:var(--brand);border-color:#ecb9b7}
+.progress{height:8px;background:#eee6e0;border-radius:999px;overflow:hidden;margin-top:14px}
+.progress>div{height:100%;background:linear-gradient(90deg,var(--brand),var(--brand2));transition:.25s}
+
+/* theme cards */
+.beta-pill{display:inline-flex;align-items:center;justify-content:center;padding:2px 7px;border-radius:999px;background:var(--soft);color:var(--brand);font-size:10px;font-weight:950;margin-left:2px}
+.occasion-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.occasion-card{border:1px solid var(--line);background:#fff!important;border-radius:18px;padding:14px;text-align:left;position:relative;min-height:112px}
+.occasion-card.selected{outline:3px solid #e7aaa8;background:#fff8f7!important}
+.occasion-card .icon{font-size:26px}
+.occasion-card .name{font-weight:950;margin-top:5px}
+.occasion-card .desc{font-size:11px;color:var(--muted);line-height:1.5;margin-top:4px}
+.occasion-check{position:absolute;top:9px;right:9px;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--brand);color:#fff;font-weight:950}
+.theme-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:14px}
+.theme-card{border:1px solid var(--line);background:#fff!important;border-radius:18px;padding:12px;text-align:left;position:relative;min-height:154px}
+.theme-card.selected{outline:3px solid #e7aaa8}
+.theme-preview{height:72px;border-radius:13px;margin-bottom:10px;position:relative;overflow:hidden;border:1px solid rgba(0,0,0,.05)}
+.theme-preview:before,.theme-preview:after{content:"";position:absolute;border-radius:999px;opacity:.85}
+.theme-preview:before{width:54px;height:54px;right:-9px;top:-8px}
+.theme-preview:after{width:32px;height:32px;left:12px;bottom:8px}
+.theme-name{font-weight:950}
+.theme-desc{font-size:11px;color:var(--muted);line-height:1.5;margin-top:4px}
+.theme-check{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--brand);color:#fff;font-weight:950}
+.theme-soft .theme-preview{background:#fff4f2}.theme-soft .theme-preview:before{background:#f0a3a7}.theme-soft .theme-preview:after{background:#f5c58f}
+.theme-album .theme-preview{background:#efe6d7}.theme-album .theme-preview:before{background:#9e7854}.theme-album .theme-preview:after{background:#d2b38e}
+.theme-night .theme-preview{background:#202735}.theme-night .theme-preview:before{background:#6d78aa}.theme-night .theme-preview:after{background:#d4b86a}
+.theme-minimal .theme-preview{background:#f6f6f4}.theme-minimal .theme-preview:before{background:#30302d}.theme-minimal .theme-preview:after{background:#c7c7c1}
+.theme-pop .theme-preview{background:#fff7c7}.theme-pop .theme-preview:before{background:#ff7f8d}.theme-pop .theme-preview:after{background:#77c7d2}
+
+/* templates */
+.template-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;margin-top:14px}
+.template{border:1px solid var(--line);background:#fff!important;border-radius:18px;padding:15px;text-align:left;position:relative;min-height:122px}
+.template.selected{outline:3px solid #e9b1af;background:#fff8f7!important}
+.template.disabled{opacity:.45}
+.template .emoji{font-size:27px}
+.template .title{font-size:16px;font-weight:950;margin-top:3px}
+.template .desc{font-size:12px;color:var(--muted);line-height:1.5;margin-top:4px}
+.template-check{position:absolute;right:10px;top:10px;width:28px;height:28px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:950}
+
+/* puzzle editor */
+.puzzle-list{display:flex;flex-direction:column;gap:11px;margin-top:14px}
+.puzzle-editor{border:1px solid var(--line);border-radius:18px;background:var(--surface2);overflow:hidden}
+.puzzle-head{display:flex;align-items:center;gap:10px;padding:13px 14px;background:#fff}
+.num{width:34px;height:34px;border-radius:50%;background:var(--soft);color:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:950;flex:0 0 auto}
+.puzzle-title{font-weight:950;flex:1}
+.status{font-size:12px;font-weight:900;padding:6px 9px;border-radius:999px}
+.status.ok{background:#edf7f0;color:var(--ok)}
+.status.ng{background:#fff3e4;color:var(--warn)}
+.iconbtn{width:34px;height:34px;border:1px solid var(--line);border-radius:10px;background:#fff!important;padding:0;font-weight:950}
+.editor-body{padding:0 14px 14px}
+.missing{font-size:12px;color:var(--warn);margin-top:8px}
+.previewbox{margin-top:12px;border:1px dashed #ddc5be;border-radius:14px;padding:11px;background:#fff}
+.previewbox strong{color:var(--brand)}
+.final-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+
+/* sticky action */
+.finishbar{position:sticky;bottom:10px;z-index:20;margin-top:16px;padding:10px;border:1px solid var(--line);border-radius:18px;background:rgba(247,245,242,.94);backdrop-filter:blur(10px);box-shadow:var(--shadow)}
+.finishbar .row{align-items:center}
+.completion{font-size:13px;font-weight:950}
+
+/* generated */
+.generated-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
+.codecard{border:1px solid var(--line);border-radius:14px;background:#fff;padding:11px;text-align:center}
+.codecard .code{font-size:22px;color:var(--brand);font-weight:950;letter-spacing:.05em}
+
+/* player base */
+.player-shell{min-height:100vh;padding:18px 14px 56px;transition:.2s}
+.player-wrap{max-width:720px;margin:auto}
+.testbar{position:sticky;top:8px;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;margin-bottom:12px;border:1px solid rgba(255,255,255,.45);border-radius:14px;backdrop-filter:blur(10px)}
+.testbar strong{font-size:13px}
+.player-card{border-radius:30px;padding:22px;box-shadow:0 18px 54px rgba(0,0,0,.12)}
+.player-hero{text-align:center;padding:34px 18px}
+.player-hero .gift{font-size:50px}
+.player-progress{display:flex;gap:6px;margin:12px 0 18px}
+.dotstep{height:7px;flex:1;border-radius:999px;opacity:.3}
+.dotstep.done,.dotstep.now{opacity:1}
+.memorybox{border-radius:17px;padding:15px;margin:12px 0}
+.option-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}
+.option{border-radius:14px;padding:13px;font-weight:900;min-height:54px}
+.option.sel{outline:3px solid currentColor}
+.puzzle-ui{margin-top:14px;border-radius:18px;padding:15px}
+.key-reveal{margin-top:14px;border-radius:18px;padding:16px;text-align:center}
+.key-reveal .key{font-size:29px;font-weight:950;letter-spacing:.08em}
+.navrow{display:flex;gap:8px;margin-top:12px}
+.navrow .btn{flex:1}
+.keylist{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:12px 0}
+.keytoken{border-radius:14px;padding:11px;text-align:center;font-weight:950}
+.codebook{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin:12px 0}
+.codebook-row{border-radius:12px;padding:10px;display:flex;justify-content:space-between;gap:8px;font-weight:850}
+.revisit{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px}
+.revisit button{border-radius:11px;padding:9px 6px;font-weight:900}
+
+/* theme runtime */
+.player-shell[data-theme="soft"]{background:#fff7f4;--t-bg:#fff;--t-ink:#302728;--t-muted:#7b7070;--t-line:#ecd8d4;--t-main:#d96f76;--t-soft:#fff0ef}
+.player-shell[data-theme="album"]{background:#e7dccb;--t-bg:#f8f2e8;--t-ink:#3c3128;--t-muted:#796b5c;--t-line:#d6c2aa;--t-main:#8e6848;--t-soft:#eee1d0}
+.player-shell[data-theme="night"]{background:#161c27;--t-bg:#212938;--t-ink:#f5f1e8;--t-muted:#b6b4bd;--t-line:#39445a;--t-main:#d1b566;--t-soft:#313a4d}
+.player-shell[data-theme="minimal"]{background:#f3f3f1;--t-bg:#fff;--t-ink:#20201e;--t-muted:#777773;--t-line:#d9d9d5;--t-main:#292927;--t-soft:#efefec}
+.player-shell[data-theme="pop"]{background:#fff4a8;--t-bg:#fffdf0;--t-ink:#2d2a2b;--t-muted:#716a6c;--t-line:#efcfd0;--t-main:#ef6777;--t-soft:#ffe3e7}
+.player-shell .player-card{background:var(--t-bg);color:var(--t-ink);border:1px solid var(--t-line)}
+.player-shell .muted{color:var(--t-muted)}
+.player-shell .badge{background:var(--t-soft);color:var(--t-main)}
+.player-shell .dotstep{background:var(--t-main)}
+.player-shell .memorybox,.player-shell .puzzle-ui,.player-shell .key-reveal,.player-shell .keytoken,.player-shell .codebook-row{background:var(--t-soft);border:1px solid var(--t-line)}
+.player-shell .option,.player-shell input,.player-shell .revisit button{background:var(--t-bg)!important;color:var(--t-ink)!important;-webkit-text-fill-color:var(--t-ink)!important;border:1px solid var(--t-line)!important}
+.player-shell .btn.primary{background:var(--t-main)!important}
+.player-shell .btn.soft{background:var(--t-soft)!important;color:var(--t-main)!important;-webkit-text-fill-color:var(--t-main)!important}
+.player-shell .btn.ghost{background:var(--t-bg)!important;border:1px solid var(--t-line)!important;color:var(--t-ink)!important;-webkit-text-fill-color:var(--t-ink)!important}
+.player-shell .key-reveal .key,.player-shell .keytoken{color:var(--t-main)}
+.player-shell .testbar{background:color-mix(in srgb,var(--t-bg) 88%, transparent);color:var(--t-ink)}
+
+/* simple interaction widgets */
+.dialwrap{text-align:center;margin:15px 0}
+.dial{width:205px;height:205px;border-radius:50%;margin:0 auto 12px;border:12px solid var(--t-line);background:conic-gradient(var(--t-soft) 0 30deg,var(--t-bg) 30deg 60deg,var(--t-soft) 60deg 90deg,var(--t-bg) 90deg 120deg,var(--t-soft) 120deg 150deg,var(--t-bg) 150deg 180deg,var(--t-soft) 180deg 210deg,var(--t-bg) 210deg 240deg,var(--t-soft) 240deg 270deg,var(--t-bg) 270deg 300deg,var(--t-soft) 300deg 330deg,var(--t-bg) 330deg 360deg);position:relative;transition:.2s}
+.dial:before{content:"▼";position:absolute;top:-34px;left:50%;transform:translateX(-50%);color:var(--t-main);font-size:27px}
+.dial-center{position:absolute;inset:57px;border-radius:50%;background:var(--t-bg);border:1px solid var(--t-line);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:950}
+.scratch-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}
+.scratch{min-height:104px;border:1px solid var(--t-line);border-radius:16px;background:repeating-linear-gradient(135deg,#d8d1cb 0 9px,#ece5df 9px 18px)!important;font-weight:950;overflow:hidden}
+.scratch.opened{background:var(--t-soft)!important}
+.pairgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.paircol{display:flex;flex-direction:column;gap:8px}
+.pairitem{border:1px solid var(--t-line);background:var(--t-bg)!important;color:var(--t-ink)!important;-webkit-text-fill-color:var(--t-ink)!important;border-radius:13px;padding:11px;font-weight:850}
+.pairitem.sel{outline:3px solid var(--t-main)}
+
+/* share */
+.share-layout{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+.share-card{border:1px solid var(--line);border-radius:18px;background:var(--surface2);padding:15px}
+.radio-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.radio-item{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:13px;background:#fff;padding:10px;cursor:pointer}
+.radio-item input{width:auto;margin-top:3px}
+.urlbox{word-break:break-all;border:1px dashed #d9c4bd;border-radius:12px;padding:10px;background:#fff;font-size:12px;color:var(--muted)}
+.share-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+
+@media(max-width:900px){
+  .theme-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:720px){
+  .steps{grid-template-columns:1fr 1fr}
+  .occasion-grid{grid-template-columns:1fr 1fr}
+  .theme-grid{grid-template-columns:1fr 1fr}
+  .template-grid,.final-grid,.share-layout{grid-template-columns:1fr}
+  .generated-grid,.keylist{grid-template-columns:repeat(2,1fr)}
+  .codebook{grid-template-columns:1fr}
+  .row{flex-direction:column}
+}
+@media(max-width:500px){
+  h1{font-size:27px}
+  .occasion-grid{grid-template-columns:1fr}
+  .theme-grid{grid-template-columns:1fr}
+  .option-grid,.scratch-grid{grid-template-columns:1fr}
+  .revisit{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+<div id="builderRoot" class="app">
+  <div class="topbar">
+    <div class="brand"><div class="brand-mark">?</div>謎レター <span class="beta-pill">β</span></div>
+    <div class="top-meta">誰かのための謎解きメーカー</div>
+  </div>
+
+  <section class="card hero">
+    <span class="badge">NAZO LETTER BETA</span>
+    <h1>誰かのために、<br>謎解きの手紙をつくろう。</h1>
+    <p class="muted">思い出・好きなもの・メッセージを、5つの謎に。作る → 試す → URLで送る。</p>
+    <div class="progress"><div id="overallProgress" style="width:0%"></div></div>
+    <div id="stepChips" class="steps"></div>
+  </section>
+
+  <section class="card section">
+    <span class="badge">BETA</span>
+    <h2>β版はシンプルな1種類です</h2>
+    <p class="muted">今は用途とデザインを固定し、謎を作って贈る体験そのものを試せる版です。用途別・テーマ別のデザインは正式版で追加予定です。</p>
+  </section>
+
+  <section class="card section">
+    <h2>① 謎を5つ選ぶ</h2>
+    <div id="templateGrid" class="template-grid"></div>
+    <div id="selectNotice" class="notice info">0 / 5 選択中</div>
+  </section>
+
+  <section class="card section">
+    <h2>② 中身を入れる</h2>
+    <div id="puzzleList" class="puzzle-list"><div class="notice info">先に謎を5つ選んでください。</div></div>
+  </section>
+
+  <section class="card section">
+    <h2>③ 最後の言葉</h2>
+    <div class="final-grid">
+      <div>
+        <label class="req">贈る相手の名前</label>
+        <input id="recipient" placeholder="例：さき">
+      </div>
+      <div>
+        <label class="req">最終回答（カタカナ5〜10文字）</label>
+        <input id="finalAnswer" maxlength="10" placeholder="例：コレカラモ">
+      </div>
+    </div>
+    <label class="req">最後のメッセージ</label>
+    <textarea id="finalMessage" placeholder="ここまで解いてくれてありがとう。これからもよろしく！"></textarea>
+    <div id="finalStatus"></div>
+  </section>
+
+  <div class="finishbar">
+    <div class="row">
+      <div>
+        <div id="completionText" class="completion">まだ生成できません</div>
+        <div id="completionDetail" class="small muted">まず謎を5つ選んでください。</div>
+      </div>
+      <button id="generateBtn" class="btn primary" disabled>生成してテストする</button>
+    </div>
+  </div>
+
+  <section id="generatedSection" class="card section hidden">
+    <span class="badge">DRAFT</span>
+    <h2>下書きができました</h2>
+    <div id="generatedKeys" class="generated-grid"></div>
+    <div class="row" style="margin-top:12px">
+      <button id="testBtn" class="btn primary">テストプレイ</button>
+      <button id="publishBtn" class="btn ghost" disabled>公開する 🔒</button>
+    </div>
+    <div id="testRequirement" class="notice warn">最後までテストすると公開できます。</div>
+    <div class="notice info"><strong>β版について</strong><br>公開すると、URLを知っている人が内容を見られます。住所・電話番号・学校名など、公開したくない個人情報は入れないでください。</div>
+  </section>
+
+  <section id="shareSection" class="card section hidden">
+    <span class="badge">PUBLISHED</span>
+    <h2>🎉 完成しました</h2>
+    <div class="share-layout">
+      <div class="share-card">
+        <h3>送る文</h3>
+        <div id="sharePresets" class="radio-list"></div>
+        <label>自由入力</label>
+        <textarea id="customShare" placeholder="好きな文章に変えられます。"></textarea>
+      </div>
+      <div class="share-card">
+        <h3>リンク</h3>
+        <div id="shareUrl" class="urlbox"></div>
+        <div class="share-actions">
+          <button id="lineShare" class="btn primary">LINEで送る</button>
+          <button id="copyLink" class="btn ghost">リンクをコピー</button>
+          <button id="copyAll" class="btn ghost">文＋リンクをコピー</button>
+          <button id="openGift" class="btn soft">受取画面を見る</button>
+        </div>
+        <div id="shareResult"></div>
+      </div>
+    </div>
+    <div class="notice info" id="shareModeNote">短い専用URLで共有できます。</div>
+  </section>
+  <p class="small muted" style="text-align:center;margin-top:18px">謎レター β｜無料テスト公開中</p>
+</div>
+
+<div id="playerRoot" class="player-shell hidden" data-theme="soft">
+  <div class="player-wrap">
+    <div id="testBar" class="testbar hidden">
+      <div><strong>🧪 テストプレイ</strong><div class="small muted">受取人と同じ内容です</div></div>
+      <div class="row" style="flex:0 0 auto">
+        <button id="restartTest" class="btn ghost">最初から</button>
+        <button id="backEdit" class="btn soft">編集へ</button>
+      </div>
+    </div>
+    <div id="playerCard" class="player-card"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* 本番デプロイ時にこの2項目だけ設定 */
+var APP_CONFIG={
+  apiBase:"https://mnpwgioonygtkujkycuv.supabase.co/functions/v1/nazoletter-gift-api",
+  publicBaseUrl:"https://raw.githack.com/17549777/Hello-world/main/nazoletter/index.html"
+};
+function backendEnabled(){return APP_CONFIG.apiBase.indexOf("__")!==0&&!!APP_CONFIG.publicBaseUrl}
+
+
+var OCCASIONS=[
+  {id:"general",icon:"✉️",name:"謎レター",desc:"誰かに自由に贈る。",intro:"あなたのための謎レターが届きました。",share:"あなたのために謎レターを作りました。遊んでみてください！"}
+];
+function occasionById(){return OCCASIONS[0]}
+
+var THEMES=[
+  {id:"soft",name:"謎レター β",desc:"β版固定テーマ",cls:"theme-soft"}
+];
+
+var TEMPLATES=[
+  {id:"passport",emoji:"🛂",title:"旅券スタンプ",desc:"場所を4択から選んでスタンプを押す。",fields:[["question","質問","例：一緒に行った思い出の場所は？"],["answer","正解","例：ラスベガス"],["choice1","候補1","例：ホノルル"],["choice2","候補2","例：ニューヨーク"],["choice3","候補3","例：ロサンゼルス"],["hint","ヒント","例：アメリカ旅行で行った場所"]]},
+  {id:"chat",emoji:"💬",title:"会話復元",desc:"口癖やよく言う言葉で会話を完成。",fields:[["question","質問","例：この空欄に入る、いつもの一言は？"],["answer","正解","例：眠い"],["choice1","候補1","例：おなかすいた"],["choice2","候補2","例：帰りたい"],["choice3","候補3","例：元気"],["hint","ヒント","例：会うとよく言ってる"]]},
+  {id:"beforeafter",emoji:"⏳",title:"どっちが先？",desc:"思い出の前後を3回だけ答える。",fields:[["event1","一番古い出来事","例：初めて会った日"],["event2","2番目","例：初めての旅行"],["event3","3番目","例：一緒に暮らし始めた日"],["event4","一番新しい出来事","例：去年の温泉旅行"]]},
+  {id:"scratch",emoji:"🎟️",title:"スクラッチ",desc:"好きなものを選んで削る。",fields:[["question","質問","例：一番好きな甘いものは？"],["answer","正解","例：プリン"],["choice1","候補1","例：アイス"],["choice2","候補2","例：ケーキ"],["choice3","候補3","例：チョコ"]]},
+  {id:"dial",emoji:"🎡",title:"ダイヤル",desc:"答えを数字に変えてダイヤルを合わせる。",fields:[["question","質問","例：初めて飼ったペットの名前は？"],["answer","答え","例：こむぎ"],["mode","数え方","文字数 / 答えに含まれる数字"]]},
+  {id:"safe",emoji:"🔐",title:"ふたつの鍵の金庫",desc:"2つの答えが合うと開く金庫。",fields:[["questionA","質問A","例：初旅行の場所は？"],["answerA","答えA","例：熱海"],["altA","別表記A（任意）","例：あたみ / アタミ","optional"],["questionB","質問B","例：記念日の月は？"],["answerB","答えB","例：5月"],["altB","別表記B（任意）","例：5 / ５月","optional"]]},
+  {id:"flip",emoji:"🃏",title:"カード裏返し",desc:"3枚のカードを正しい順にめくる。",fields:[["card1","カード1","例：初旅行"],["card2","カード2","例：誕生日"],["card3","カード3","例：記念日"],["order","正しい順番","例：1-3-2"]]},
+  {id:"slider",emoji:"🎞️",title:"スライドフィルム",desc:"思い出の数字だけフィルムを送る。",fields:[["question","質問","例：記念日は何月？"],["number","数字","例：5"],["hint","ヒント","例：春が終わるころ"]]},
+  {id:"overlay",emoji:"🪟",title:"重ね合わせ",desc:"2つの思い出でシートを重ねる。",fields:[["questionA","質問A","例：出会った場所は？"],["answerA","答えA","例：大宮"],["altA","別表記A（任意）","例：おおみや / オオミヤ","optional"],["questionB","質問B","例：初旅行は？"],["answerB","答えB","例：熱海"],["altB","別表記B（任意）","例：あたみ / アタミ","optional"]]},
+  {id:"pair",emoji:"🧩",title:"ペア探し",desc:"関係のある思い出を3組つなぐ。",fields:[["left1","左1","例：大宮"],["right1","右1","例：初めて会った"],["left2","左2","例：熱海"],["right2","右2","例：初旅行"],["left3","左3","例：5月"],["right3","右3","例：記念日"]]}
+];
+
+var occasion="general",theme="soft",selected=[],values={},draft=null,testDone=false,published=null,publicationRef=null;
+var player={};
+
+function $(s){return document.querySelector(s)}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]})}
+function norm(s){
+  var x=String(s==null?"":s).trim();
+  try{x=x.normalize("NFKC")}catch(e){}
+  x=x.replace(/[ぁ-ゖ]/g,function(ch){return String.fromCharCode(ch.charCodeAt(0)+0x60)});
+  return x.replace(/[\s　]+/g,"").toLowerCase();
+}
+function aliases(s){return String(s||"").split(/[\/／,，、]+/).map(function(x){return norm(x)}).filter(Boolean)}
+function matchesAnswer(input,canonical,alt){
+  var n=norm(input),all=[norm(canonical)].concat(aliases(alt));
+  return all.indexOf(n)>=0;
+}
+function kataOK(s){return /^[ァ-ヶー]{5,10}$/.test(String(s||"").trim())}
+function tById(id){return TEMPLATES.find(function(t){return t.id===id})}
+function ensure(id){if(!values[id])values[id]={}}
+function requiredFilled(id){
+  var t=tById(id),v=values[id]||{};
+  return t.fields.filter(function(f){return f[3]!=="optional"}).every(function(f){return String(v[f[0]]||"").trim()!==""});
+}
+function validationIssues(id){
+  var v=values[id]||{},issues=[];
+  function uniq(vals,msg){var n=vals.map(norm);if(n.some(function(x){return !x})||new Set(n).size!==n.length)issues.push(msg)}
+  if(id==="passport"||id==="chat"||id==="scratch") uniq([v.answer,v.choice1,v.choice2,v.choice3],"正解と候補は4つとも別の内容にしてください");
+  if(id==="beforeafter") uniq([v.event1,v.event2,v.event3,v.event4],"4つの出来事は別々にしてください");
+  if(id==="dial"){
+    if(v.mode!=="文字数"&&v.mode!=="答えに含まれる数字")issues.push("数え方を選んでください");
+    if(v.mode==="文字数"&&String(v.answer||"").trim()){
+      var len=Array.from(String(v.answer).replace(/[\s　]+/g,"")).length;
+      if(len<1||len>12)issues.push("文字数は1〜12になる答えにしてください");
+    }
+    if(v.mode==="答えに含まれる数字"&&String(v.answer||"").trim()){
+      var m=String(v.answer).normalize?String(v.answer).normalize("NFKC").match(/\d+/):String(v.answer).match(/\d+/);
+      var n=m?Number(m[0]):NaN;if(!(n>=1&&n<=12))issues.push("答えに1〜12の数字を含めてください");
+    }
+  }
+  if(id==="flip"&&String(v.order||"").trim()){
+    var ord=String(v.order).replace(/[^123]/g,"").split("");
+    if(ord.length!==3||new Set(ord).size!==3)issues.push("順番は1・2・3を1回ずつ使ってください（例：1-3-2）");
+  }
+  if(id==="slider"&&String(v.number||"").trim()){
+    var sn=Number(String(v.number).normalize?String(v.number).normalize("NFKC"):v.number);
+    if(!Number.isInteger(sn)||sn<1||sn>12)issues.push("数字は1〜12にしてください");
+  }
+  if(id==="pair"){
+    if(v.left1&&v.left2&&v.left3)uniq([v.left1,v.left2,v.left3],"左の3項目は別々にしてください");
+    if(v.right1&&v.right2&&v.right3)uniq([v.right1,v.right2,v.right3],"右の3項目は別々にしてください");
+  }
+  return issues;
+}
+function complete(id){return requiredFilled(id)&&validationIssues(id).length===0}
+function finalOK(){return kataOK($("#finalAnswer").value)&&$("#recipient").value.trim()!==""&&$("#finalMessage").value.trim()!==""}
+function ready(){return selected.length===5&&selected.every(complete)&&finalOK()}
+function randomInt(n){if(window.crypto&&crypto.getRandomValues){var a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%n}return Math.floor(Math.random()*n)}
+function makeKeyFactory(){var letters="ABCDEFGHJKLMNPRSTUVWXYZ",used={};return function(){var k;do{k=letters[randomInt(letters.length)]+(randomInt(9)+1)}while(used[k]);used[k]=1;return k}}
+function shuffled(a){var b=a.slice();for(var i=b.length-1;i>0;i--){var j=randomInt(i+1),x=b[i];b[i]=b[j];b[j]=x}return b}
+function splitAnswer(s){var a=Array.from(s),parts=[],base=Math.floor(a.length/5),extra=a.length%5,pos=0;for(var i=0;i<5;i++){var len=base+(i<extra?1:0);parts.push(a.slice(pos,pos+len).join(""));pos+=len}return parts}
+function fakeFragment(len,forbidden){
+  var a=["ア","キ","ソ","ネ","ミ","ル","ト","カ","ユ","ワ","リ","モ","ナ","セ","ホ","フ","テ","ヨ","ク","レ"],x="";
+  do{x="";for(var i=0;i<len;i++)x+=a[randomInt(a.length)]}while(forbidden.indexOf(x)>=0);
+  return x;
+}
+function b64(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
+function unb64(s){s=s.replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="=";return JSON.parse(decodeURIComponent(escape(atob(s))))}
+function hashString(str){var h=2166136261;for(var i=0;i<str.length;i++){h^=str.charCodeAt(i);h+=(h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24)}return h>>>0}
+
+/* builder */
+function renderOccasions(){}
+function renderThemes(){}
+function renderTemplates(){
+  $("#templateGrid").innerHTML=TEMPLATES.map(function(t){
+    var on=selected.indexOf(t.id)>=0,dis=selected.length>=5&&!on;
+    return '<button class="template '+(on?"selected ":"")+(dis?"disabled":"")+'" data-id="'+t.id+'" '+(dis?"disabled":"")+'>'+
+      (on?'<span class="template-check">✓</span>':'')+'<div class="emoji">'+t.emoji+'</div><div class="title">'+t.title+'</div><div class="desc">'+t.desc+'</div></button>';
+  }).join("");
+  document.querySelectorAll(".template").forEach(function(b){
+    b.onclick=function(){var id=b.getAttribute("data-id"),i=selected.indexOf(id);if(i>=0)selected.splice(i,1);else if(selected.length<5){selected.push(id);ensure(id)}draft=null;testDone=false;published=null;saveBuilderState();renderAll()}
+  });
+}
+function fieldHTML(id,f){
+  var v=(values[id]&&values[id][f[0]])||"",optional=f[3]==="optional",fid="f_"+id+"_"+f[0];
+  var label='<label for="'+fid+'" class="'+(optional?'':'req')+'">'+esc(f[1])+'</label>';
+  if(id==="dial"&&f[0]==="mode"){
+    return '<div>'+label+'<select id="'+fid+'" data-puzzle="'+id+'" data-field="mode"><option value="">選んでください</option><option value="文字数" '+(v==="文字数"?'selected':'')+'>文字数</option><option value="答えに含まれる数字" '+(v==="答えに含まれる数字"?'selected':'')+'>答えに含まれる数字</option></select></div>';
+  }
+  return '<div>'+label+'<input id="'+fid+'" data-puzzle="'+id+'" data-field="'+f[0]+'" value="'+esc(v)+'" placeholder="'+esc(f[2])+'"></div>';
+}
+function previewText(id){
+  var v=values[id]||{};
+  if(id==="passport")return "「"+(v.answer||"＿＿")+'」を含む4択スタンプ';
+  if(id==="chat")return "会話の空欄に「"+(v.answer||"＿＿")+'」を入れる';
+  if(id==="beforeafter")return "4つの出来事から3回の前後比較";
+  if(id==="scratch")return "4枚から「"+(v.answer||"＿＿")+'」を選んで削る';
+  if(id==="dial")return "「"+(v.answer||"＿＿")+'」を '+(v.mode||"＿＿")+' として使う';
+  if(id==="safe")return "「"+(v.answerA||"＿＿")+'」×「'+(v.answerB||"＿＿")+'」で開錠';
+  if(id==="flip")return "カードを "+(v.order||"＿＿")+' の順でめくる';
+  if(id==="slider")return (v.number||"＿＿")+' 回フィルムを送る';
+  if(id==="overlay")return "「"+(v.answerA||"＿＿")+'」と「'+(v.answerB||"＿＿")+'」を重ねる';
+  return "3組の思い出をつなぐ";
+}
+function renderEditors(){
+  if(!selected.length){$("#puzzleList").innerHTML='<div class="notice info">先に謎を5つ選んでください。</div>';return}
+  $("#puzzleList").innerHTML=selected.map(function(id,idx){
+    var t=tById(id),v=values[id]||{},ok=complete(id);
+    var missing=t.fields.filter(function(f){return f[3]!=="optional"&&!String(v[f[0]]||"").trim()}).map(function(f){return f[1]});var issues=validationIssues(id);
+    return '<div class="puzzle-editor"><div class="puzzle-head"><div class="num">'+(idx+1)+'</div><div class="puzzle-title">'+t.emoji+' '+t.title+'</div>'+
+      '<span class="status '+(ok?"ok":"ng")+'" data-status="'+id+'">'+(ok?"完成":"未完成")+'</span>'+
+      '<button class="iconbtn up" data-id="'+id+'">↑</button><button class="iconbtn down" data-id="'+id+'">↓</button></div>'+
+      '<div class="editor-body">'+t.fields.map(function(f){return fieldHTML(id,f)}).join("")+
+      '<div class="missing" data-missing="'+id+'">'+(missing.length?'未入力：'+missing.map(esc).join("、"):(issues.length?issues.map(esc).join(" / "):""))+'</div>'+
+      '<div class="previewbox"><div class="small muted">プレビュー</div><strong data-preview="'+id+'">'+esc(previewText(id))+'</strong></div></div></div>';
+  }).join("");
+  document.querySelectorAll("[data-puzzle]").forEach(function(inp){
+    inp.oninput=inp.onchange=function(){var id=inp.getAttribute("data-puzzle"),f=inp.getAttribute("data-field");ensure(id);values[id][f]=inp.value;draft=null;testDone=false;published=null;saveBuilderState();refreshEditor(id);updateMeta();renderDraft()}
+  });
+  document.querySelectorAll(".up").forEach(function(b){b.onclick=function(){move(b.getAttribute("data-id"),-1)}});
+  document.querySelectorAll(".down").forEach(function(b){b.onclick=function(){move(b.getAttribute("data-id"),1)}});
+}
+function refreshEditor(id){
+  var t=tById(id),v=values[id]||{},ok=complete(id);
+  var st=document.querySelector('[data-status="'+id+'"]');if(st){st.className="status "+(ok?"ok":"ng");st.textContent=ok?"完成":"未完成"}
+  var missing=t.fields.filter(function(f){return f[3]!=="optional"&&!String(v[f[0]]||"").trim()}).map(function(f){return f[1]});var issues=validationIssues(id);
+  var ms=document.querySelector('[data-missing="'+id+'"]');if(ms)ms.textContent=missing.length?"未入力："+missing.join("、"):(issues.length?issues.join(" / "):"");
+  var pv=document.querySelector('[data-preview="'+id+'"]');if(pv)pv.textContent=previewText(id);
+}
+function move(id,d){var i=selected.indexOf(id),j=i+d;if(j<0||j>=selected.length)return;var x=selected[i];selected[i]=selected[j];selected[j]=x;draft=null;testDone=false;published=null;saveBuilderState();renderAll()}
+function updateMeta(){
+  var done=selected.filter(complete).length,s1=selected.length===5,s2=s1&&done===5,s3=s2&&finalOK(),s4=s3&&testDone;
+  $("#selectNotice").className="notice "+(s1?"ok":"info");$("#selectNotice").textContent=selected.length+" / 5 選択中";
+  $("#stepChips").innerHTML=
+    '<div class="step '+(s1?"ok":"now")+'">1. 謎 '+selected.length+'/5</div>'+
+    '<div class="step '+(s2?"ok":(s1?"now":""))+'">2. 中身 '+done+'/5</div>'+
+    '<div class="step '+(s3?"ok":(s2?"now":""))+'">3. 最後</div>'+
+    '<div class="step '+(s4?"ok":(s3?"now":""))+'">4. テスト</div>';
+  var pct=(selected.length/5*30)+(done/5*35)+(finalOK()?20:0)+(testDone?15:0);$("#overallProgress").style.width=Math.min(100,pct)+"%";
+  if(selected.length<5){$("#completionText").textContent="謎を選んでください";$("#completionDetail").textContent="あと "+(5-selected.length)+" 個。"}
+  else if(done<5){$("#completionText").textContent="入力が足りません";$("#completionDetail").textContent="あと "+(5-done)+" 個の謎が未完成。"}
+  else if(!finalOK()){$("#completionText").textContent="最後の設定を確認";$("#completionDetail").textContent="名前・最終回答・メッセージが必要です。"}
+  else{$("#completionText").textContent=draft?(testDone?"テスト完了":"下書き生成済み"):"生成できます";$("#completionDetail").textContent=draft?(testDone?"公開できます。":"一度遊んで確認してください。"):"準備OK。"}
+  $("#generateBtn").disabled=!ready();
+  var a=$("#finalAnswer").value.trim();$("#finalStatus").innerHTML=!a?"":kataOK(a)?'<div class="notice ok">最終回答：'+esc(a)+'</div>':'<div class="notice warn">カタカナ5〜10文字で入力してください。</div>';
+}
+function buildPuzzle(id,idx,nextKey,part){
+  var t=tById(id),v=JSON.parse(JSON.stringify(values[id]||{})),key=nextKey(),p={slot:idx+1,templateId:id,title:t.title,emoji:t.emoji,config:v,key:key,decoyKeys:[nextKey(),nextKey(),nextKey()],answerPart:part};
+  if(id==="beforeafter"){var ev=[v.event1,v.event2,v.event3,v.event4],pairs=[[0,1],[2,3],[0,3]];p.duels=pairs.map(function(pair){var sw=randomInt(2)===1;return {left:ev[sw?pair[1]:pair[0]],right:ev[sw?pair[0]:pair[1]],correct:sw?1:0}})}
+  return p;
+}
+function generateDraft(){
+  var next=makeKeyFactory(),parts=splitAnswer($("#finalAnswer").value.trim());
+  draft={version:5,occasion:"general",theme:"soft",recipient:$("#recipient").value.trim(),finalAnswer:$("#finalAnswer").value.trim(),finalMessage:$("#finalMessage").value.trim(),puzzles:selected.map(function(id,i){return buildPuzzle(id,i,next,parts[i])})};
+  var entries=[],correctParts=draft.puzzles.map(function(p){return p.answerPart});draft.puzzles.forEach(function(p){entries.push({code:p.key,text:p.answerPart});p.decoyTexts=[];for(var i=0;i<3;i++){var txt=fakeFragment(Array.from(p.answerPart).length,correctParts.concat(p.decoyTexts));p.decoyTexts.push(txt);entries.push({code:p.decoyKeys[i],text:txt})}});draft.codebook=shuffled(entries);
+  testDone=false;published=null;renderDraft();updateMeta();
+}
+function renderDraft(){
+  if(!draft){$("#generatedSection").classList.add("hidden");$("#shareSection").classList.add("hidden");return}
+  $("#generatedSection").classList.remove("hidden");$("#generatedKeys").innerHTML=draft.puzzles.map(function(p){return '<div class="codecard"><div class="small muted">PUZZLE '+p.slot+'</div><div class="code">'+p.key+'</div><div class="small">'+p.emoji+' '+esc(p.title)+'</div></div>'}).join("");
+  $("#publishBtn").disabled=!testDone;$("#publishBtn").textContent=testDone?"公開する 🌐":"公開する 🔒";
+  $("#testRequirement").className="notice "+(testDone?"ok":"warn");$("#testRequirement").textContent=testDone?"テスト完了。公開できます。":"最後までテストすると公開できます。";
+  if(!published)$("#shareSection").classList.add("hidden");
+}
+function renderAll(){occasion="general";theme="soft";renderTemplates();renderEditors();updateMeta();renderDraft()}
+["recipient","finalAnswer","finalMessage"].forEach(function(id){$("#"+id).addEventListener("input",function(){draft=null;testDone=false;published=null;saveBuilderState();updateMeta();renderDraft()})});
+$("#generateBtn").onclick=generateDraft;
+$("#testBtn").onclick=function(){startPlayer(draft,true)};
+$("#publishBtn").onclick=async function(){
+  if(!testDone)return;
+  published=JSON.parse(JSON.stringify(draft));
+  var btn=$("#publishBtn"),old=btn.textContent;btn.disabled=true;btn.textContent="公開しています…";
+  try{
+    if(backendEnabled()){
+      var body=publicationRef?{action:"update",slug:publicationRef.slug,editToken:publicationRef.editToken,payload:published}:{action:"create",payload:published};
+      var res=await fetch(APP_CONFIG.apiBase,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+      var data=await res.json().catch(function(){return {}});
+      if(!res.ok)throw new Error(data.error||"公開に失敗しました");
+      if(!publicationRef)publicationRef={slug:data.slug,editToken:data.editToken};
+    }
+    saveBuilderState();renderShare();
+  }catch(e){
+    published=null;$("#testRequirement").className="notice bad";$("#testRequirement").textContent="公開できませんでした："+(e&&e.message?e.message:"通信エラー");
+  }finally{btn.disabled=!testDone;btn.textContent=old}
+};
+$("#backEdit").onclick=function(){showBuilder()};
+$("#restartTest").onclick=function(){startPlayer(draft,true)};
+
+function saveBuilderState(){
+  try{localStorage.setItem("nazoletter_builder_v2",JSON.stringify({selected:selected,values:values,recipient:$("#recipient").value,finalAnswer:$("#finalAnswer").value,finalMessage:$("#finalMessage").value,publicationRef:publicationRef}))}catch(e){}
+}
+function loadBuilderState(){
+  try{
+    var raw=localStorage.getItem("nazoletter_builder_v2")||localStorage.getItem("nazoletter_builder_v1")||localStorage.getItem("futarinazo_builder_v1");if(!raw)return;
+    var st=JSON.parse(raw);occasion="general";theme="soft";
+    if(Array.isArray(st.selected))selected=st.selected.filter(function(id){return !!tById(id)}).slice(0,5);
+    if(st.values&&typeof st.values==="object")values=st.values;
+    $("#recipient").value=st.recipient||"";$("#finalAnswer").value=st.finalAnswer||"";$("#finalMessage").value=st.finalMessage||"";publicationRef=st.publicationRef||null;
+  }catch(e){}
+}
+
+/* player */
+function startPlayer(data,isTest){
+  player={data:JSON.parse(JSON.stringify(data)),test:!!isTest,index:-1,keys:[],outputs:{},dial:1,flip:[],pairs:{},pairLeft:null};
+  $("#builderRoot").classList.add("hidden");$("#playerRoot").classList.remove("hidden");$("#playerRoot").setAttribute("data-theme",data.theme||"soft");
+  $("#testBar").classList.toggle("hidden",!isTest);renderPlayer();window.scrollTo(0,0);
+}
+function showBuilder(){$("#playerRoot").classList.add("hidden");$("#builderRoot").classList.remove("hidden");renderAll();window.scrollTo(0,0)}
+function progressHTML(){var n=player.index;return '<div class="player-progress">'+[0,1,2,3,4,5].map(function(i){return '<div class="dotstep '+(i<n?"done":i===n?"now":"")+'"></div>'}).join("")+'</div>'}
+function renderPlayer(){
+  if(player.index===-1){
+    var occ=occasionById(player.data.occasion||"general");
+    $("#playerCard").innerHTML='<div class="player-hero"><div class="gift">'+occ.icon+'</div><span class="badge">謎レター</span><h1>'+esc(player.data.recipient)+'さんへ</h1><p>'+esc(occ.intro)+'</p><p class="muted">5つの謎を解いて、最後の言葉を見つけてください。</p><button id="startPlay" class="btn primary" style="width:100%;margin-top:10px">謎レターを開く</button></div>';
+    $("#startPlay").onclick=function(){player.index=0;renderPlayer()};return;
+  }
+  if(player.index>=5){renderMeta();return}
+  var p=player.data.puzzles[player.index];
+  $("#playerCard").innerHTML='<span class="badge">PUZZLE '+(player.index+1)+' / 5</span>'+progressHTML()+'<h1>'+p.emoji+' '+esc(p.title)+'</h1>'+renderPuzzleBody(p);
+  bindPuzzle(p);
+}
+function choiceOptions(p){var v=p.config;return shuffled([v.answer,v.choice1,v.choice2,v.choice3])}
+function renderPuzzleBody(p){
+  var v=p.config,id=p.templateId;
+  if(id==="passport"||id==="chat"||id==="scratch"){
+    var opts=choiceOptions(p),cls=id==="scratch"?"scratch-grid":"option-grid";
+    return '<div class="memorybox"><strong>'+esc(v.question)+'</strong>'+(v.hint?'<div class="small muted">'+esc(v.hint)+'</div>':'')+'</div><div class="'+cls+'">'+opts.map(function(x){return '<button class="'+(id==="scratch"?"scratch":"option")+'" data-choice="'+esc(x)+'">'+esc(x)+'</button>'}).join("")+'</div><div id="puzzleResult"></div>';
+  }
+  if(id==="beforeafter"){
+    return '<p>先だったと思う方を選んでください。</p>'+p.duels.map(function(d,i){return '<div class="puzzle-ui"><div class="small muted">Q'+(i+1)+'</div><div class="option-grid"><button class="option duel" data-q="'+i+'" data-v="0">'+esc(d.left)+'</button><button class="option duel" data-q="'+i+'" data-v="1">'+esc(d.right)+'</button></div></div>'}).join("")+'<button id="duelDone" class="btn primary" style="width:100%;margin-top:10px">決める</button><div id="puzzleResult"></div>';
+  }
+  if(id==="dial"){
+    return '<div class="memorybox"><strong>'+esc(v.question)+'</strong><div class="small muted">「'+esc(v.mode)+'」として使います。</div></div><div class="dialwrap"><div id="dial" class="dial"><div id="dialCenter" class="dial-center">1</div></div><div class="row"><button id="dialPrev" class="btn ghost">←</button><button id="dialNext" class="btn soft">→</button></div><button id="dialStop" class="btn primary" style="width:100%;margin-top:9px">ここで止める</button></div><div id="puzzleResult"></div>';
+  }
+  if(id==="safe"){
+    return '<div class="puzzle-ui"><label>'+esc(v.questionA)+'</label><input id="safeA" placeholder="答え"><label>'+esc(v.questionB)+'</label><input id="safeB" placeholder="答え"><button id="openSafe" class="btn dark" style="width:100%;margin-top:12px">金庫を開ける 🔐</button></div><div id="puzzleResult"></div>';
+  }
+  if(id==="flip"){
+    return '<div class="option-grid">'+[v.card1,v.card2,v.card3].map(function(x,i){return '<button class="option flipCard" data-i="'+(i+1)+'">'+esc(x)+'</button>'}).join("")+'</div><div class="small muted">選んだ順：<span id="flipOrder">まだありません</span></div><button id="flipDone" class="btn primary" style="width:100%;margin-top:10px">決める</button><div id="puzzleResult"></div>';
+  }
+  if(id==="slider"){
+    return '<div class="memorybox"><strong>'+esc(v.question)+'</strong><div class="small muted">'+esc(v.hint||"")+'</div></div><div class="puzzle-ui" style="text-align:center"><div style="font-size:42px">🎞️</div><div style="font-size:30px;font-weight:950;color:var(--t-main)"><span id="slideCount">0</span> 回</div><div class="row"><button id="slidePrev" class="btn ghost">← 1</button><button id="slideNext" class="btn soft">1 →</button></div><button id="slideStop" class="btn primary" style="width:100%;margin-top:9px">ここで止める</button></div><div id="puzzleResult"></div>';
+  }
+  if(id==="overlay"){
+    return '<div class="puzzle-ui"><label>'+esc(v.questionA)+'</label><input id="overlayA" placeholder="答え"><label>'+esc(v.questionB)+'</label><input id="overlayB" placeholder="答え"><button id="overlayBtn" class="btn soft" style="width:100%;margin-top:12px">重ねる</button></div><div id="puzzleResult"></div>';
+  }
+  var rights=shuffled([v.right1,v.right2,v.right3]);
+  return '<div class="pairgrid"><div class="paircol">'+[v.left1,v.left2,v.left3].map(function(x,i){return '<button class="pairitem pairLeft" data-i="'+i+'">'+esc(x)+'</button>'}).join("")+'</div><div class="paircol">'+rights.map(function(x){return '<button class="pairitem pairRight" data-v="'+esc(x)+'">'+esc(x)+'</button>'}).join("")+'</div></div><button id="pairDone" class="btn primary" style="width:100%;margin-top:10px">決める</button><div id="puzzleResult"></div>';
+}
+function decoyFor(p,n){return p.decoyKeys[n%p.decoyKeys.length]}
+function outputKey(p,key){
+  player.outputs[p.slot-1]=key;player.keys[p.slot-1]=key;
+  $("#puzzleResult").innerHTML='<div class="key-reveal"><div class="small muted">鍵を獲得</div><div class="key">'+esc(key)+'</div></div><div class="navrow"><button id="nextPuzzle" class="btn primary">'+(p.slot===5?"最終謎へ":"次へ")+'</button></div>';
+  $("#nextPuzzle").onclick=function(){player.index++;renderPlayer();window.scrollTo(0,0)};
+}
+function correctDialValue(p){
+  var v=p.config,mode=norm(v.mode),ans=String(v.answer||"");
+  if(mode.indexOf("文字")>=0)return Math.max(1,Math.min(12,Array.from(ans.replace(/\s+/g,"")).length));
+  var m=ans.match(/\d+/);return m?Math.max(1,Math.min(12,Number(m[0]))):Math.max(1,Math.min(12,Array.from(ans).length));
+}
+function bindPuzzle(p){
+  var id=p.templateId,v=p.config;
+  if(id==="passport"||id==="chat"||id==="scratch"){
+    document.querySelectorAll(id==="scratch"?".scratch":".option").forEach(function(b){
+      b.onclick=function(){var c=b.getAttribute("data-choice");document.querySelectorAll(id==="scratch"?".scratch":".option").forEach(function(x){x.classList.remove("sel","opened")});b.classList.add(id==="scratch"?"opened":"sel");outputKey(p,norm(c)===norm(v.answer)?p.key:decoyFor(p,Math.abs(c.length)%8))}
+    });return;
+  }
+  if(id==="beforeafter"){
+    var picks=[null,null,null];document.querySelectorAll(".duel").forEach(function(b){b.onclick=function(){var q=Number(b.getAttribute("data-q")),x=Number(b.getAttribute("data-v"));picks[q]=x;document.querySelectorAll('.duel[data-q="'+q+'"]').forEach(function(z){z.classList.remove("sel")});b.classList.add("sel")}});
+    $("#duelDone").onclick=function(){if(picks.some(function(x){return x===null})){$("#puzzleResult").innerHTML='<div class="notice warn">3問すべて選んでください。</div>';return}var good=picks.every(function(x,i){return x===p.duels[i].correct});var code=picks[0]*4+picks[1]*2+picks[2];outputKey(p,good?p.key:decoyFor(p,code))};return;
+  }
+  if(id==="dial"){
+    player.dial=1;function paint(){$("#dialCenter").textContent=player.dial;$("#dial").style.transform="rotate("+((player.dial-1)*30)+"deg)"}$("#dialPrev").onclick=function(){player.dial=player.dial===1?12:player.dial-1;paint()};$("#dialNext").onclick=function(){player.dial=player.dial===12?1:player.dial+1;paint()};$("#dialStop").onclick=function(){var c=correctDialValue(p);outputKey(p,player.dial===c?p.key:decoyFor(p,player.dial))};return;
+  }
+  if(id==="safe"){
+    $("#openSafe").onclick=function(){if(matchesAnswer($("#safeA").value,v.answerA,v.altA)&&matchesAnswer($("#safeB").value,v.answerB,v.altB)){outputKey(p,p.key)}else $("#puzzleResult").innerHTML='<div class="notice bad">🔒 開かない。</div>'};return;
+  }
+  if(id==="flip"){
+    player.flip=[];document.querySelectorAll(".flipCard").forEach(function(b){b.onclick=function(){var n=Number(b.getAttribute("data-i"));if(player.flip.indexOf(n)>=0)return;player.flip.push(n);b.classList.add("sel");$("#flipOrder").textContent=player.flip.join(" → ")}});
+    $("#flipDone").onclick=function(){if(player.flip.length!==3){$("#puzzleResult").innerHTML='<div class="notice warn">3枚すべて選んでください。</div>';return}var want=String(v.order).replace(/[^\d]/g,"").split("").map(Number).slice(0,3),good=want.length===3&&want.every(function(x,i){return x===player.flip[i]});outputKey(p,good?p.key:decoyFor(p,(player.flip[0]*9+player.flip[1]*3+player.flip[2])%p.decoyKeys.length))};return;
+  }
+  if(id==="slider"){
+    var n=0;function paint(){$("#slideCount").textContent=n}$("#slidePrev").onclick=function(){n=Math.max(0,n-1);paint()};$("#slideNext").onclick=function(){n=Math.min(12,n+1);paint()};$("#slideStop").onclick=function(){var c=Math.max(0,Math.min(12,Number(v.number)||0));outputKey(p,n===c?p.key:decoyFor(p,n))};return;
+  }
+  if(id==="overlay"){
+    $("#overlayBtn").onclick=function(){var good=matchesAnswer($("#overlayA").value,v.answerA,v.altA)&&matchesAnswer($("#overlayB").value,v.answerB,v.altB);outputKey(p,good?p.key:decoyFor(p,5))};return;
+  }
+  if(id==="pair"){
+    player.pairs={};player.pairLeft=null;document.querySelectorAll(".pairLeft").forEach(function(b){b.onclick=function(){player.pairLeft=Number(b.getAttribute("data-i"));document.querySelectorAll(".pairLeft").forEach(function(x){x.classList.remove("sel")});b.classList.add("sel")}});
+    document.querySelectorAll(".pairRight").forEach(function(b){b.onclick=function(){if(player.pairLeft===null)return;player.pairs[player.pairLeft]=b.getAttribute("data-v");document.querySelectorAll(".pairRight").forEach(function(x){x.classList.remove("sel")});b.classList.add("sel")}});
+    $("#pairDone").onclick=function(){if(Object.keys(player.pairs).length<3){$("#puzzleResult").innerHTML='<div class="notice warn">3組すべてつないでください。</div>';return}var good=norm(player.pairs[0])===norm(v.right1)&&norm(player.pairs[1])===norm(v.right2)&&norm(player.pairs[2])===norm(v.right3);outputKey(p,good?p.key:decoyFor(p,7))};
+  }
+}
+function renderMeta(){
+  var d=player.data;
+  $("#playerCard").innerHTML='<span class="badge">FINAL</span>'+progressHTML()+'<h1>5つの鍵から、最後の言葉を見つけよう</h1><div class="keylist">'+player.keys.map(function(k,i){return '<div class="keytoken">'+(i+1)+'. '+esc(k||"？")+'</div>'}).join("")+'</div><div class="codebook">'+d.codebook.map(function(r){return '<div class="codebook-row"><span>'+esc(r.code)+'</span><strong>'+esc(r.text)+'</strong></div>'}).join("")+'</div><label>最後の答え</label><input id="metaAnswer" placeholder="カタカナで入力"><button id="metaCheck" class="btn primary" style="width:100%;margin-top:10px">答える</button><div id="metaResult"></div><div class="sep"></div><div class="small muted">鍵を取り直す</div><div class="revisit">'+d.puzzles.map(function(p,i){return '<button data-revisit="'+i+'">'+(i+1)+'</button>'}).join("")+'</div>';
+  document.querySelectorAll("[data-revisit]").forEach(function(b){b.onclick=function(){player.index=Number(b.getAttribute("data-revisit"));renderPlayer();window.scrollTo(0,0)}});
+  $("#metaCheck").onclick=function(){if(norm($("#metaAnswer").value)===norm(d.finalAnswer)){$("#metaResult").innerHTML='<div class="notice ok">正解！ 🎉</div><div class="puzzle-ui"><span class="badge">MESSAGE</span><h2>'+esc(d.recipient)+'さんへ</h2><p style="white-space:pre-wrap">'+esc(d.finalMessage)+'</p></div>'+(player.test?'<button id="finishTest" class="btn primary" style="width:100%;margin-top:12px">テスト完了</button>':'');if(player.test)$("#finishTest").onclick=function(){testDone=true;showBuilder();renderDraft();updateMeta();document.getElementById("generatedSection").scrollIntoView({behavior:"smooth"})}}else $("#metaResult").innerHTML='<div class="notice warn">答えが合わないみたい。下から鍵を取り直せます。</div>'};
+}
+
+/* share */
+function sharePresets(){
+  var o=occasionById((published&&published.occasion)||occasion);
+  return [
+    o.share,
+    "謎レターを作りました✉️ 暇なときに遊んでみて！",
+    "思い出や好きなものを使った謎解きです。全部解けるかな？"
+  ];
+}
+function renderShare(){
+  var payload=b64(published),actualUrl,displayUrl;
+  if(backendEnabled()&&publicationRef){
+    var base=APP_CONFIG.publicBaseUrl.replace(/\/$/,"");
+    actualUrl=base+"?g="+encodeURIComponent(publicationRef.slug);displayUrl=actualUrl;
+  }else{
+    actualUrl=location.href.split("#")[0]+"#gift="+payload;
+    var slug=("000000"+hashString(payload).toString(36).toUpperCase()).slice(-6);
+    displayUrl="プレビュー用 /g/"+slug;
+  }
+  $("#shareSection").classList.remove("hidden");$("#shareUrl").textContent=displayUrl;$("#shareUrl").dataset.actualUrl=actualUrl;
+  var presets=sharePresets();$("#sharePresets").innerHTML=presets.map(function(x,i){return '<label class="radio-item"><input type="radio" name="sharePreset" value="'+i+'" '+(i===0?"checked":"")+'><span>'+esc(x)+'</span></label>'}).join("");$("#customShare").value="";
+  var note=$("#shareModeNote");if(note)note.textContent=backendEnabled()?"公開版を更新しても、このリンクは変わりません。":"ローカル試作では共有URLが長くなります。本番接続後は短いURLになります。";
+  $("#shareSection").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function shareMessage(){var c=$("#customShare").value.trim();if(c)return c;var r=document.querySelector('input[name="sharePreset"]:checked');var p=sharePresets();return p[r?Number(r.value):0]}
+function actualShareUrl(){return $("#shareUrl").dataset.actualUrl||$("#shareUrl").textContent}
+$("#lineShare").onclick=function(){window.open("https://line.me/R/msg/text/?"+encodeURIComponent(shareMessage()+"\n"+actualShareUrl()),"_blank")};
+$("#copyLink").onclick=function(){copyText(actualShareUrl(),"リンクをコピーしました。")};
+$("#copyAll").onclick=function(){copyText(shareMessage()+"\n"+actualShareUrl(),"文とリンクをコピーしました。")};
+$("#openGift").onclick=function(){window.open(actualShareUrl(),"_blank")};
+function copyText(t,msg){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){$("#shareResult").innerHTML='<div class="notice ok">'+msg+'</div>'}).catch(function(){fallbackCopy(t,msg)})}else fallbackCopy(t,msg)}
+function fallbackCopy(t,msg){var ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();$("#shareResult").innerHTML='<div class="notice ok">'+msg+'</div>'}
+
+/* boot */
+async function bootGift(){
+  var hashPayload=location.hash.indexOf("#gift=")===0?decodeURIComponent(location.hash.slice(6)):null;
+  if(hashPayload){
+    try{startPlayer(unb64(hashPayload),false);return true}catch(e){return false}
+  }
+  if(backendEnabled()){
+    var m=location.pathname.match(/\/g\/([A-Za-z0-9_-]{6,32})\/?$/),q=new URLSearchParams(location.search).get("g"),slug=m?m[1]:q;
+    if(slug){
+      try{
+        var res=await fetch(APP_CONFIG.apiBase+"?slug="+encodeURIComponent(slug),{headers:{"Accept":"application/json"}});
+        var data=await res.json().catch(function(){return {}});if(!res.ok||!data.payload)throw new Error(data.error||"not found");
+        startPlayer(data.payload,false);return true;
+      }catch(e){
+        $("#builderRoot").classList.add("hidden");$("#playerRoot").classList.remove("hidden");$("#playerCard").innerHTML='<div class="player-hero"><h1>この謎レターは開けませんでした</h1><p class="muted">リンクが正しいか確認してください。</p></div>';return true;
+      }
+    }
+  }
+  return false;
+}
+async function init(){if(!(await bootGift())){loadBuilderState();renderAll()}}
+init();
+
+})();
+</script>
+</body>
+</html>
